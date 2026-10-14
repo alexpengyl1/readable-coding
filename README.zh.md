@@ -26,11 +26,28 @@ AI 助手写的代码常常结果正确但难以阅读，常见问题有：
 | 验证 | 助手自己检查结果，检查用的代码不放进交付的代码里 |
 | 自查清单和示例 | 交付前的自查清单，以及 R、Python、bash 各一组"不要这样写 / 应该这样写"的对比 |
 
-`SKILL.md` 中的规则是用中文写的。
+`SKILL.md` 中的规则用中英双语写成。
 
 ## 使用方法
 
-- **Claude Code / Claude skills**：把 `readable-coding/` 文件夹复制到 skills 目录下，例如 `~/.claude/skills/readable-coding/`。
+`SKILL.md` 使用通用的 skill 格式（开头写 `name` 和 `description`），同一个文件可以同时用于 Claude 和 Codex。把本仓库克隆到对应工具的 skills 文件夹即可。
+
+**Claude Code**
+
+```bash
+git clone https://github.com/alexpengyl1/readable-coding.git ~/.claude/skills/readable-coding
+```
+
+**Codex（OpenAI）**
+
+```bash
+git clone https://github.com/alexpengyl1/readable-coding.git ~/.agents/skills/readable-coding
+```
+
+只想在某个项目里用：克隆到项目里的 `.claude/skills/readable-coding`（Claude Code）或 `.agents/skills/readable-coding`（Codex）。如果没出现，重启一下工具。以后更新：`git -C <skill 文件夹> pull`。
+
+**Claude 应用（claude.ai / 桌面版）**：把本仓库下载为 ZIP，在 设置 → Capabilities → Skills 里上传。
+
 - **其他助手（Cursor、Copilot 等）**：把 `SKILL.md` 的正文（开头 `---` 之间那段之后的内容）粘贴到助手的规则文件或自定义指令里。
 
 ## 致谢

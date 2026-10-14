@@ -26,11 +26,28 @@ This skill gives the assistant a set of rules so that the delivered code looks l
 | Verification | The assistant checks its own results; the checking code is not included in the delivered code |
 | Checklist and examples | A pre-delivery checklist, plus one "don't write this / write this" pair each for R, Python and bash |
 
-The rules in `SKILL.md` are written in Chinese.
+The rules in `SKILL.md` are written in both English and Chinese.
 
 ## Usage
 
-- **Claude Code / Claude skills**: copy the `readable-coding/` folder into your skills directory, e.g. `~/.claude/skills/readable-coding/`.
+`SKILL.md` uses the standard skill format (`name` + `description` in the frontmatter), so the same file works in Claude and Codex. Clone this repository into the skills folder of the tool you use.
+
+**Claude Code**
+
+```bash
+git clone https://github.com/alexpengyl1/readable-coding.git ~/.claude/skills/readable-coding
+```
+
+**Codex (OpenAI)**
+
+```bash
+git clone https://github.com/alexpengyl1/readable-coding.git ~/.agents/skills/readable-coding
+```
+
+To use it in one project only, clone it into `.claude/skills/readable-coding` (Claude Code) or `.agents/skills/readable-coding` (Codex) inside the project. Restart the tool if the skill does not show up. To update later: `git -C <skill folder> pull`.
+
+**Claude app (claude.ai / desktop)**: download this repository as a ZIP and upload it under Settings → Capabilities → Skills.
+
 - **Other assistants (Cursor, Copilot, etc.)**: paste the body of `SKILL.md` (everything after the block between the opening `---` lines) into the assistant's rules file or custom instructions.
 
 ## Acknowledgements
