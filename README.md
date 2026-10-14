@@ -26,7 +26,7 @@ This skill gives the assistant a set of rules so that the delivered code looks l
 | Verification | The assistant checks its own results; the checking code is not included in the delivered code |
 | Checklist and examples | A pre-delivery checklist, plus one "don't write this / write this" pair each for R, Python and bash |
 
-The rules in `SKILL.md` are written in both English and Chinese.
+The rules in `SKILL.md` are written in English.
 
 ## Usage
 
