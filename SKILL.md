@@ -1,6 +1,6 @@
 ---
 name: readable-coding
-description: "Rules for writing code that a human will read and run locally, in R, Python and Linux shell (bash): R scripts / R Markdown / Quarto, Python scripts / Jupyter notebooks, shell commands and bash scripts. Short one-purpose chunks, existing package functions and standard tools instead of hand-rolled code, default output and plots, explanation in prose, surfacing assumptions, surgical edits, and doing only what the user asked. Use whenever delivering code, a notebook or command lines to the user, especially for bioinformatics / machine learning analyses (preprocessing, PCA, clustering, Leiden, random forest, scikit-learn, mixOmics, command-line file processing). Style modelled on teaching code such as the ML4LS course (payamemami.com)."
+description: "Rules for writing code that a human will read and run locally, in R, Python and Linux shell (bash): R scripts / R Markdown / Quarto, Python scripts / Jupyter notebooks, shell commands and bash scripts. Short one-purpose chunks, existing package functions and standard tools instead of hand-rolled code, default output and plots, a short step / input / output comment at the top of every block, surfacing assumptions, surgical edits, and doing only what the user asked. Use whenever delivering code, a notebook or command lines to the user, especially for bioinformatics / machine learning analyses (preprocessing, PCA, clustering, Leiden, random forest, scikit-learn, mixOmics, command-line file processing). Style modelled on teaching code such as the ML4LS course (payamemami.com)."
 ---
 
 # Readable coding · R / Python / Linux（写给人读的代码）
@@ -69,11 +69,22 @@ Checks I run myself in the sandbox (assertions, comparisons with earlier results
 - One plot per question; no label tweaking, custom palettes or multi-panel layouts unless asked or colouring by group is really needed.
   一张图对应一个问题；不调标签位置、不配色板、不拼多面板，除非用户要求或确实需要按组上色。
 
-### 2.6 Explain in prose, keep code comments few / 解释写在正文里，代码里少写注释
-- In notebooks: one or two sentences before a block on what and why, one sentence after it on the result.
-  notebook 中：代码块前用一两句话说明"做什么、为什么"，代码块后一句话写结论。
-- In scripts: one comment line above each section; inline comments only for key numbers or parameter meanings.
-  脚本中：每段上方一行注释即可；行内注释只标关键数字或参数含义。
+### 2.6 A header comment on every block; few other comments / 每段代码开头写说明注释，其他注释从简
+- **Every code block / cell / script section starts with a short header comment of three lines: what this step does, its input, its output.**
+  **每个代码块 / cell / 脚本段落开头都写三行说明注释：这一步做什么、输入是什么、输出是什么。**
+  ```r
+  # Step: keep genes expressed in at least 3 samples
+  # Input:  counts (gene x sample matrix)
+  # Output: counts_filtered (same format, fewer genes)
+  ```
+  Name the actual objects or files and their format (e.g. `counts`, gene x sample matrix; `data/meta.csv`). If a step only displays something, write `Output: printed table` or `Output: plot`. Use `#` in R, Python and bash.
+  写清楚具体的对象或文件名和格式（如 `counts`，基因 × 样本矩阵；`data/meta.csv`）。如果这一步只是显示结果，写 `Output: printed table` 或 `Output: plot`。R、Python、bash 都用 `#`。
+- Write these comments in the language the user writes in (Chinese user → Chinese comments), unless the user asks otherwise.
+  注释语言跟随用户使用的语言（用户用中文就写中文注释），除非用户另有要求。
+- In notebooks, the header comment goes inside the block; add one sentence of prose after the block on the result.
+  notebook 中，说明注释写在代码块内部开头；代码块后用一句话写结论。
+- Apart from the header, inline comments only for key numbers or parameter meanings.
+  除开头的说明注释外，行内注释只标关键数字或参数含义。
 
 ### 2.7 Repetition is fine; avoid over-abstraction / 允许重复，避免过度抽象
 - Don't define functions or classes used only once; use loops only for real parameter scans or batch file processing, and keep loop bodies short.
@@ -188,6 +199,7 @@ Simple tasks don't need a verification list every time.
 - [ ] Any hand-written code that a package or standard tool already provides? / 有没有手写的、其实包或标准工具里已有的功能？
 - [ ] Any block longer than ~10 lines, or pipe longer than 3 stages? Can it be split? / 有没有超过约 10 行的代码块，或超过 3 段的管道？能否拆开？
 - [ ] Is all verification code (assertions, comparisons) removed? / 验证代码（断言、比对）是否都已删除？
+- [ ] Does every block start with the three-line header (step / input / output)? / 每段代码开头是否都有三行说明（做什么 / 输入 / 输出）？
 - [ ] Are plots default style only? / 画图代码是否只是默认样式？
 - [ ] Do paths and parameters need changing in one place only, at the top? / 路径和参数是否只需在开头改一处？
 - [ ] Have I run it end to end in the sandbox without errors (done on my side, not in the deliverable)? / 我已在沙盒中完整运行过一遍，确认没有报错（这一步在我这边做，不写进交付物）。
@@ -212,10 +224,16 @@ g <- igraph::graph_from_adjacency_matrix(snn, mode = "undirected", weighted = TR
 
 Write this / 应该这样写：
 ```r
+# Step: build a shared nearest-neighbour graph from the first 10 PCs
+# Input:  pca (prcomp object)
+# Output: g (igraph graph)
 pcs <- pca$x[, 1:10]
 g <- bluster::makeSNNGraph(pcs, k = 10, type = "jaccard")
 ```
 ```r
+# Step: Leiden clustering on the graph
+# Input:  g (igraph graph)
+# Output: leiden (clustering result); printed cluster sizes
 set.seed(42)
 leiden <- igraph::cluster_leiden(g, objective_function = "modularity", resolution = 0.5)
 table(igraph::membership(leiden))
@@ -236,13 +254,22 @@ class RFPipeline:
 
 Write this / 应该这样写：
 ```python
+# Step: split samples into training and test sets
+# Input:  X (feature table), y (labels)
+# Output: X_train, X_test, y_train, y_test
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 ```
 ```python
+# Step: fit a random forest
+# Input:  X_train, y_train
+# Output: model (fitted RandomForestClassifier)
 model = RandomForestClassifier(n_estimators=100, random_state=42)
 model.fit(X_train, y_train)
 ```
 ```python
+# Step: evaluate on the test set
+# Input:  model, X_test, y_test
+# Output: printed classification report
 print(classification_report(y_test, model.predict(X_test)))
 ```
 
@@ -257,6 +284,9 @@ Write this / 应该这样写：
 ```bash
 INPUT_DIR="data"
 
+# Step: count data rows in each sample file
+# Input:  data/*.tsv (one file per sample, with a header line)
+# Output: printed file name and row count
 for f in "$INPUT_DIR"/*.tsv; do
     echo "$f"
     tail -n +2 "$f" | wc -l      # number of rows without the header

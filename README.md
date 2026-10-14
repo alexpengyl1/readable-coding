@@ -19,7 +19,7 @@ This skill gives the assistant a set of rules so that the delivered code looks l
 | Section | Content |
 |---|---|
 | Before coding | Ask when the request is ambiguous; state any parameters the assistant chose |
-| General rules | Do only what was asked; one step per block; use existing tools; default output and default plots; explanation in prose; no over-abstraction; parameters at the top; plain names; surgical edits; simplicity test |
+| General rules | Do only what was asked; one step per block; use existing tools; default output and default plots; a step / input / output comment at the top of every block; no over-abstraction; parameters at the top; plain names; surgical edits; simplicity test |
 | R | `package::function()`, R Markdown, `set.seed()`, base plots |
 | Python | Ready-made pandas / scikit-learn functions, Jupyter cells, `random_state`; no unrequested `argparse` / `class` / `logging` / broad `try/except` |
 | Linux command line | One command per line, short pipes, standard tools, variables defined at the top and quoted |
