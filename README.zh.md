@@ -23,6 +23,7 @@ AI 助手写的代码常常结果正确但难以阅读，常见问题有：
 | R | `包名::函数名`、R Markdown 写法、`set.seed()`、base 作图 |
 | Python | pandas / scikit-learn 现成函数、Jupyter cell、`random_state`；不加没要求的 `argparse` / `class` / `logging` / 宽泛的 `try/except` |
 | Linux 命令行 | 一行一个命令、管道要短、用标准工具、变量在开头定义并加引号 |
+| 渲染报告（R Markdown / Quarto） | 输出 HTML：章节编号、浮动目录、代码可折叠（默认显示）；每个代码块前用几句话说明，结果以表格显示，附样本流转表，最后是 `sessionInfo()` |
 | 验证 | 助手自己检查结果，检查用的代码不放进交付的代码里 |
 | 自查清单和示例 | 交付前的自查清单，以及 R、Python、bash 各一组"不要这样写 / 应该这样写"的对比 |
 

@@ -1,6 +1,6 @@
 ---
 name: readable-coding
-description: "Rules for writing code that a human will read and run locally, in R, Python and Linux shell (bash): R scripts / R Markdown / Quarto, Python scripts / Jupyter notebooks, shell commands and bash scripts. Short one-purpose chunks, existing package functions and standard tools instead of hand-rolled code, default output and plots, a short step / input / output comment at the top of every block, surfacing assumptions, surgical edits, and doing only what the user asked. Use whenever delivering code, a notebook or command lines to the user, especially for bioinformatics / machine learning analyses (preprocessing, PCA, clustering, Leiden, random forest, scikit-learn, mixOmics, command-line file processing). Style modelled on teaching code such as the ML4LS course (payamemami.com)."
+description: "Rules for writing code that a human will read and run locally, in R, Python and Linux shell (bash): R scripts / R Markdown / Quarto, Python scripts / Jupyter notebooks, shell commands and bash scripts. Short one-purpose chunks, existing package functions and standard tools instead of hand-rolled code, default output and plots, a short step / input / output comment at the top of every block, surfacing assumptions, surgical edits, and doing only what the user asked. R Markdown / Quarto deliverables are written as knitted HTML reports (numbered sections, floating TOC, results shown as tables, code folding with code shown by default). Use whenever delivering code, a notebook, a report or command lines to the user, especially for bioinformatics / machine learning analyses (preprocessing, PCA, clustering, Leiden, random forest, scikit-learn, mixOmics, multi-omics data preparation, command-line file processing). Style modelled on teaching code such as the ML4LS course (payamemami.com)."
 ---
 
 # Readable coding · R / Python / Linux
@@ -14,7 +14,7 @@ Apply these rules to **all code delivered to the user**:
 
 Code snippets pasted in chat follow the same rules.
 
-Checks I run myself in the sandbox (assertions, comparisons with earlier results, numeric checks) are not bound by these rules, **but none of that checking code goes into the deliverable**.
+Checks I run myself in the sandbox (assertions, comparisons with earlier results, numeric checks) are not bound by these rules, **but none of that checking code goes into the deliverable**. The one exception is reader-facing data checks in a rendered report (section 4.4): those belong in the report because the reader needs to see them.
 
 **Core principle: the reader runs the code step by step in RStudio / Jupyter / a terminal.** For every step, ask: can the reader tell what this step does just from the function or command name?
 
@@ -46,6 +46,7 @@ Checks I run myself in the sandbox (assertions, comparisons with earlier results
 
 ### 2.4 Let default output speak
 - Show objects and results directly; don't build formatted strings or hand-assembled summary tables (unless asked).
+- Exception: in a rendered report, a small `data.frame()` that lines up several numbers for the reader (dataset / rows / columns, check / value) is fine; see section 4.4.
 
 ### 2.5 Default plot style
 - One plot per question; no label tweaking, custom palettes or multi-panel layouts unless asked or colouring by group is really needed.
@@ -59,7 +60,7 @@ Checks I run myself in the sandbox (assertions, comparisons with earlier results
   ```
   Name the actual objects or files and their format (e.g. `counts`, gene x sample matrix; `data/meta.csv`). If a step only displays something, write `Output: printed table` or `Output: plot`. Use `#` in R, Python and bash.
 - Write these comments in the language the user writes in (Chinese user → Chinese comments), unless the user asks otherwise.
-- In notebooks, the header comment goes inside the block; add one sentence of prose after the block on the result.
+- In notebooks, the header comment goes inside the block; add one sentence of prose after the block on the result. In rendered reports, the prose goes before the block instead (section 4.3).
 - Apart from the header, inline comments only for key numbers or parameter meanings.
 
 ### 2.7 Repetition is fine; avoid over-abstraction
@@ -68,7 +69,7 @@ Checks I run myself in the sandbox (assertions, comparisons with earlier results
 ### 2.8 Run top to bottom; parameters at the top
 - Runs from top to bottom with no hidden state.
 - Fix the seed for any random step.
-- Paths and parameters the user may change go in one block at the top (data dir, output dir, `k`, `resolution`); all output is saved to the output dir.
+- Paths and parameters the user may change go in one block at the top (data dir, output dir, `k`, `resolution`); all output is saved to the output dir. In R Markdown / Quarto reports, put them in the YAML `params:` field and use `params$seed` etc. in the code.
 
 ### 2.9 Plain names
 - Use names like `expr`, `pca`, `keep`, `cluster`, `train`, `test`, `input_dir`; avoid cryptic abbreviations (e.g. `zf`, `cm`, `md`).
@@ -117,35 +118,117 @@ Checks I run myself in the sandbox (assertions, comparisons with earlier results
 
 ---
 
-## 4. Verification happens on my side
+## 4. Rendered HTML reports (R Markdown / Quarto)
+
+When the deliverable is an `.Rmd` or `.qmd`, write it as a report that knits to HTML: the reader sees the code, what each step did and the result right under it, and can fold the code away. **Code is shown by default** (`code_folding: show`); the reader hides it with the per-chunk buttons or the "Code → Hide All Code" menu.
+
+### 4.1 YAML header
+
+R Markdown:
+```yaml
+---
+title: "TCGA BRCA multi-omics: data preparation and train/test split"
+subtitle: "mRNA, DNA methylation and protein with clinical data"
+author: "Name"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_folding: show
+    df_print: kable
+params:
+  seed: 123
+  train_prop: 0.7
+  data_dir: "."
+---
+```
+- `code_folding: show` is the default; use `hide` only if the user asks for code hidden at first.
+- `df_print: kable` prints every data frame as a clean HTML table.
+- Every value the user might change (seed, split ratio, thresholds, paths) goes in `params:`.
+
+Quarto equivalent (also works for Python code and `.ipynb` rendered with `quarto render`):
+```yaml
+format:
+  html:
+    toc: true
+    toc-location: left
+    number-sections: true
+    code-fold: show
+    code-tools: true
+    df-print: kable
+```
+
+### 4.2 Report structure
+1. **Hidden setup chunk** (`{r setup, include=FALSE}`): `library()` calls and small helpers used many times, such as a sample-flow tracker. Loading messages stay out of the report.
+2. **Overview**: what data, a numbered list of the steps, and the general principle that holds throughout (e.g. same patients in the same order in every dataset; split at patient level; anything data-driven is learned on the training set only).
+3. **One numbered section per step** (`# Sample selection`, `## Primary tumours with all three omics`), each with prose → chunk → result.
+4. **Summary**: the sample-flow table and one line on the recommended next step.
+5. **Session information**: `sessionInfo()` as the last chunk.
+
+### 4.3 Prose around each chunk
+- Before the chunk, 1–3 plain sentences: what this step does and **why** (e.g. "Male breast cancer is rare and biologically different, so only female patients are kept.").
+- Explain messages that look like errors but are not (e.g. "harmonizing input: removing … sampleMap rows is not an error").
+- Flag slow or memory-heavy steps before they run.
+- When a step depends on a mapping or a choice, show it as a small markdown table in the prose (e.g. original stage → outcome category).
+- After the result, a sentence only when the result needs interpreting (e.g. "No duplicated patients were found.").
+- The three-line step / input / output header (2.6) still goes inside each chunk.
+
+### 4.4 Show results the reader can check
+- Inspect before you filter: print `table(x, useNA = "ifany")` in its own chunk, then filter in the next chunk.
+- Summarise several objects in one small table rather than several prints:
+  ```r
+  data.frame(dataset = c("mRNA", "Protein", "Clinical"),
+             rows    = c(nrow(rna), nrow(prot), nrow(clin)),
+             columns = c(ncol(rna), ncol(prot), ncol(clin)))
+  ```
+- Data-integrity checks the reader should see (sample order matches across datasets, no train/test overlap) are shown as a `check` / `value` table of TRUE/FALSE, not as hidden `stopifnot()`.
+- Track the number of samples through every filter with a flow table, printed in the Summary:
+  ```r
+  # in the setup chunk
+  flow <- data.frame(step = character(), samples = integer())
+  add_step <- function(flow, step, n) rbind(flow, data.frame(step = step, samples = n))
+
+  # after each filter
+  flow <- add_step(flow, "Female", nrow(clin))
+  ```
+- For big objects show `head()`, `dim()` or a `dry.run`-style listing, never the whole object.
+- When the report saves files, end that section with a table of file name / rows / columns.
+
+---
+
+## 5. Verification happens on my side
 (adapted from karpathy-guidelines · Goal-Driven Execution)
 
-Decide what "done" means before starting and verify it in the sandbox; verification code stays out of the deliverable. For example:
+Decide what "done" means before starting and verify it in the sandbox; verification code stays out of the deliverable (reader-facing checks in reports, 4.4, are the exception). For example:
 1. Filter low-expressed genes → verify: gene count matches expectation and the removed genes are all low-expressed.
 2. Rewrite an Rmd / notebook → verify: it knits or runs from scratch without errors and numbers match the previous version.
 3. Switch to a package function → verify: compare with the old implementation (e.g. ARI) and tell the user about any difference.
 4. Shell script → verify: run it on test data and check the line counts and contents of the output files.
+5. Rendered report → verify: it knits to HTML, the code is visible by default, and the tables appear under their chunks.
 
 Simple tasks don't need a verification list every time.
 
 ---
 
-## 5. Pre-delivery checklist
+## 6. Pre-delivery checklist
 
 - [ ] Was every step asked for? Extras removed and turned into a one-line suggestion?
 - [ ] Are all parameters and assumptions I chose stated in the reply?
 - [ ] When editing existing code: did I change only what was asked?
 - [ ] Any hand-written code that a package or standard tool already provides?
 - [ ] Any block longer than ~10 lines, or pipe longer than 3 stages? Can it be split?
-- [ ] Is all verification code (assertions, comparisons) removed?
+- [ ] Is all verification code (assertions, comparisons) removed, apart from reader-facing check tables in reports?
 - [ ] Does every block start with the three-line header (step / input / output)?
 - [ ] Are plots default style only?
-- [ ] Do paths and parameters need changing in one place only, at the top?
+- [ ] Do paths and parameters need changing in one place only, at the top (or in `params:`)?
+- [ ] Rmd / qmd: numbered sections, floating TOC, `code_folding: show`, `df_print: kable`, hidden setup chunk, prose before each chunk, sample-flow table, `sessionInfo()` at the end?
 - [ ] Have I run it end to end in the sandbox without errors (done on my side, not in the deliverable)?
 
 ---
 
-## 6. Examples
+## 7. Examples
 
 ### R · Leiden clustering
 
@@ -177,6 +260,29 @@ set.seed(42)
 leiden <- igraph::cluster_leiden(g, objective_function = "modularity", resolution = 0.5)
 table(igraph::membership(leiden))
 ```
+
+### R Markdown · one report section
+
+````markdown
+## Female patients
+
+Male breast cancer is rare and biologically different, so only female patients are kept.
+
+```{r}
+# Step: count patients by gender
+# Input:  clin (patients x clinical variables)
+# Output: printed table
+table(clin$gender, useNA = "ifany")
+```
+
+```{r}
+# Step: keep female patients and record the count
+# Input:  clin
+# Output: clin (female patients only), flow (one more row)
+clin <- clin[which(clin$gender %in% "female"), ]
+flow <- add_step(flow, "Female", nrow(clin))
+```
+````
 
 ### Python · Random forest
 

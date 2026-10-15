@@ -23,6 +23,7 @@ This skill gives the assistant a set of rules so that the delivered code looks l
 | R | `package::function()`, R Markdown, `set.seed()`, base plots |
 | Python | Ready-made pandas / scikit-learn functions, Jupyter cells, `random_state`; no unrequested `argparse` / `class` / `logging` / broad `try/except` |
 | Linux command line | One command per line, short pipes, standard tools, variables defined at the top and quoted |
+| Rendered reports (R Markdown / Quarto) | Knit to HTML with numbered sections, a floating table of contents and code folding (code shown by default); a short explanation before each chunk, results shown as tables, a sample-flow table, `sessionInfo()` at the end |
 | Verification | The assistant checks its own results; the checking code is not included in the delivered code |
 | Checklist and examples | A pre-delivery checklist, plus one "don't write this / write this" pair each for R, Python and bash |
 
